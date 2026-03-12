@@ -1,0 +1,49 @@
+# MMD Variance vs Qubit Number Configuration
+# ============================================
+# dataset and init_strategy accept a single value or a list.
+# init_range specifies [low, high, n_steps] for log-spaced init scales.
+# The script performs a grid search over all combinations.
+# Different init_strategies are plotted on the same axes;
+# separate plots are produced for each (dataset, init_scale) pair.
+
+# qubit_range: [150]
+qubit_range: [6,7,8,9,10,11,12,13,14,15,16]
+n_trials: 1000             # number of random parameter initializations per qubit count
+n_estimates_per_trial: 1  # independent MMD estimates per initialization (to estimate noise)
+n_ops: 1000               # number of random ops for MMD estimation
+n_samples: 1000           # number of samples for IQP expectation values
+mean_op_weight_mmd: [2.0, 'constant_bandwidth']  # float or "constant_bandwidth", or a list of both
+
+dataset: ["genomic"]
+init_strategy: ["from_data"]  # or a list
+init_range: [0.01,100, 30]   # [low, high, n_steps] — log-spaced init scales from low to high
+init_distribution: "uniform"   # "normal" or "uniform"
+param_normalization: ["unit"]              # "unit" (1), "sqrt" (√n_gates), or "linear" (n_gates)
+
+state_vector_sim: True    # if true, compute exact MMD² via state-vector simulation (circuit.probs())
+pl_device: "default.qubit" # "default.qubit" (enables vmap over trials), "lightning.qubit", or "lightning.gpu"
+grad_order: 0             # 0: variance of MMD²; 1: mean max|∇MMD| (only for state_vector_sim=false)
+use_jit: True             # if false, disable JIT compilation in mmd_loss_iqp
+
+n_steps: 3000              # number of training steps (training.py)
+learning_rate: 0.001       # optimizer step size (training.py)
+
+random_seed: 42
+output_dir: "mmd_variance_plots"
+results_file: "mmd_variance_results.pkl"  # pandas DataFrame with all computed results
+training_results_file: "training_results.pkl"  # training loss curves
+fresh_start: False                        # if true, delete previous results and start fresh
+log_scale_x: True          # if true, use logarithmic scale on the x-axis
+log_scale_y: True          # if true, use logarithmic scale on the y-axis
+init_scale_xlim: [0.01, 1]    # x-axis range for init_scale plots (all strategies except from_data)
+show_error_bars: False         # if false, hide error bars on all plots
+train_show_mean: False         # if false, hide mean curves on training loss plots
+train_log_y: True             # if true, use log scale on y-axis for training loss plots
+dpi: 300
+
+bernoulli:
+  n_data_samples: 1000
+  prob_bitflips: 0.3
+
+genomic:
+  path: "../dequantize/datasets/genomic/805_SNP_1000G_real_train.csv"
